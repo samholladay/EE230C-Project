@@ -1,16 +1,16 @@
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes hered
-kbT    = 0.026;
+kbT    = 0.026; %eV
 a_0    = 1.42e-10; %Graphene lattice constant
-h_bar  = (6.626e-34)/(2*pi);
-q      = 1.6e-19;
+h_bar  = (6.626e-34)/(2*pi); %J*s
+q      = 1.6e-19; %Coulomb
 w      = 1e-6; % How wide is the transistor?
-Vd     = linspace(0,0.5,500);
+Vd     = linspace(0,0.5,500); %Volts
 mu     = 0;
 
 a      = 3/2;
 b      = sqrt(3)/2;
-kmax_x = pi/(a);
+kmax_x = pi/(a); 
 kmax_y = 2*pi/(3*b);
 kmin_y = pi / (3*b);
 Ek = graphene_bandstructure();
