@@ -1,4 +1,4 @@
-function [E] = graphene_bandstructure(k_x, k_y)
+function [E] = graphene_E_k(k_x, k_y)
 clear all;
 clc;
 
