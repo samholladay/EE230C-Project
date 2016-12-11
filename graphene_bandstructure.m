@@ -130,5 +130,4 @@ end
 
 h = plot(E,'b');
 % axis([0.5 2 -3 6])
-
 end

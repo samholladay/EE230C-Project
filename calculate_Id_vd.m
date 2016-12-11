@@ -1,6 +1,6 @@
-% function [Id, Vd] = calculate_Id_vg(Ek)
+function [Id, Vd] = calculate_Id_vd(Ek)
 %UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%   Detailed explanation goes hered
 kbT    = 0.026;
 a_0    = 1.42e-10; %Graphene lattice constant
 h_bar  = (6.626e-34)/(2*pi);
@@ -57,5 +57,5 @@ Id=-q.*w.*v_inj;
 
 plot(Vd,-Id);
 %xlabel('Vd');
-% end
+end
 
