@@ -1,4 +1,4 @@
-function [E] = graphene_bandstructure()
+function [Emk] = graphene_bandstructure()
 clear all;
 clc;
 
@@ -86,6 +86,7 @@ H_off_neg_r2 = H_off_pos_r2';
 
 Nt = 1000;
 E = zeros(3 * Nt, 6);
+Emk = zeros(Nt, 6);
 index = 0;
 
 for Nk = 1:Nt
@@ -98,6 +99,7 @@ for Nk = 1:Nt
     H = H_onsite + p1 + p2 + p3 + p4;
     [V,eigst] = eig(H, 'vector');
     E(index + (Nt - Nk) + 1,:) = eigst;
+    Emk(index + Nk + 1, :) = eigst;
 end
 
 index = Nt;
