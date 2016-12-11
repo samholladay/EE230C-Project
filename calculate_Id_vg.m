@@ -12,9 +12,9 @@ k_step = 1;
 
 % Recall v=(1/h_bar)dE/dk
 grad = diff(Ek)/k_step;
-v = (1/h_bar).*grad;
+v = (1/h_bar).*grad; % vk
 length=size(Ek,1);
-Ek_cut=Ek(2:length,:);
+Ek_cut=Ek(2:length,:); % diff reduces the length of the output by 1
 fermi=1./(1+exp((Ek_cut-mu)./kbT)); % What is mu?
 integrand = (1/(2.*pi)).*fermi.*v;
 x=linspace(0,1e6,size(Ek_cut,1));
@@ -24,7 +24,7 @@ fk = trapz(x,fermi);
 vth = nansum(fk_vk./fk);
 %Id=-q.*w.*fk_vk;
 Vd=linspace(0,2,500);
-v_inj=vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
+v_inj=vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT)); % Assuming non-degenerate
 Id=-q.*w.*v_inj;
 
 plot(Vd,Id);
