@@ -1,3 +1,5 @@
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes hered
 kbT    = 0.026;
 a_0    = 1.42e-10; %Graphene lattice constant
 h_bar  = (6.626e-34)/(2*pi);
@@ -54,4 +56,3 @@ v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
 Id=-q.*w.*v_inj;
 
 plot(Vd,-Id);
-
