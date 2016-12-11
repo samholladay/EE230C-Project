@@ -1,6 +1,4 @@
 function [E] = graphene_E_k(k_x, k_y)
-clear all;
-clc;
 
 Ep_C = 1.2057;
 Ed_C = 24.1657;

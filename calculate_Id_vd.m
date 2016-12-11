@@ -1,6 +1,3 @@
-% function [Id, Vd] = calculate_Id_vg(Ek)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
 kbT    = 0.026;
 a_0    = 1.42e-10; %Graphene lattice constant
 h_bar  = (6.626e-34)/(2*pi);
@@ -14,6 +11,7 @@ b      = sqrt(3)/2;
 kmax_x = pi/(a);
 kmax_y = 2*pi/(3*b);
 kmin_y = pi / (3*b);
+Ek = graphene_bandstructure();
 length_of_Ek = size(Ek,1);
 k_x = linspace(0, pi/(3/2), length_of_Ek);
 k_x = k_x(2:length_of_Ek);
@@ -25,9 +23,9 @@ y_resolution = 30;
 
 % Recall v=(1/h_bar)dE/dk
 grad = diff(Ek)/k_step;
-v = (1/h_bar).*grad;
+v = (q/h_bar).*grad;
 Ek_cut = Ek(2:length_of_Ek,:);
-x = linspace(0,1e-10,size(Ek_cut,1));
+x = linspace(0,1e-2,size(Ek_cut,1));
 num_of_x_indicies = length_of_Ek - 1;
 % TODO: Remove the hard-coded 6 in the future.
 fermi_across_y = zeros(num_of_x_indicies, 6);
@@ -43,7 +41,7 @@ for x_index=1:num_of_x_indicies
     fermi_across_y(x_index, :) = trapz(k_y, fermi);
 end
 
-integrand = (1/(2.*pi)).*fermi_across_y.*v;
+integrand = (1/(4.*pi^2)).*fermi_across_y.*v;
 
 % MUST USE X TO DEFINE LIMITS OF INTEGRATION
 fk_vk = trapz(x,integrand); % Integrate to infinity
@@ -56,6 +54,4 @@ v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
 Id=-q.*w.*v_inj;
 
 plot(Vd,-Id);
-%xlabel('Vd');
-% end
 

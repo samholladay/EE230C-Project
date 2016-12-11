@@ -1,6 +1,4 @@
 function [Emk] = graphene_bandstructure()
-clear all;
-clc;
 
 Ep_C = 1.2057;
 Ed_C = 24.1657;
