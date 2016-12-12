@@ -1,4 +1,6 @@
 function [Emk] = graphene_bandstructure()
+%Calculates and plots band structure for graphene
+%returns bands along kx direction
 
 Ep_C = 1.2057;
 Ed_C = 24.1657;
