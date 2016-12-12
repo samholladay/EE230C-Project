@@ -18,19 +18,22 @@ kmin_y = pi / (3*b);
 Ek = graphene_bandstructure();
 length_of_Ek = size(Ek,1);
 k_x = linspace(0, pi/(3/2), length_of_Ek);
-k_x = k_x(2:length_of_Ek);
+k_x = k_x(3:length_of_Ek);
 k_y_limit = linspace(kmax_y, kmin_y, length_of_Ek);
-k_y_limit = k_y_limit(2:length_of_Ek);
+k_y_limit = k_y_limit(3:length_of_Ek);
 k_step = pi/(a_0*size(Ek,1));
 
-y_resolution = 30;
+y_resolution = 200;
 
 % Recall v=(1/h_bar)dE/dk
+% Chopping off the first element of Ek because it is 0.
+Ek = Ek(2:length_of_Ek,:);
 grad = diff(Ek)/k_step;
 v = (q/h_bar).*grad;
-Ek_cut = Ek(2:length_of_Ek,:);
+% v(1,:) = zeros(1,6);
+Ek_cut = Ek(2:length_of_Ek-1,:);
 x = linspace(0,1e-2,size(Ek_cut,1));
-num_of_x_indicies = length_of_Ek - 1;
+num_of_x_indicies = length_of_Ek - 2;
 
 % TODO: Remove the hard-coded 6 in the future.
 fermi_across_y = zeros(num_of_x_indicies, 6);
@@ -56,7 +59,7 @@ vth = nansum(fk_vk./fk);
 disp(vth)
 %Id=-q.*w.*fk_vk;
 
-Vd_max = 5;
+Vd_max = 4;
 Vd_step = 0.1;
 Id_Vd = zeros(int32(Vd_max/Vd_step), 1);
 index = 1;
