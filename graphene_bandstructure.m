@@ -82,7 +82,7 @@ H_off_neg_r2 = H_off_pos_r2';
 % H_off_neg_r1 = H_off_pos_r1';
 % H_off_neg_r2 = H_off_pos_r2';
 
-Nt = 1000;
+Nt = 100;
 E = zeros(3 * Nt, 6);
 Emk = zeros(Nt, 6);
 index = 0;

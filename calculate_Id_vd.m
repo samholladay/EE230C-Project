@@ -2,8 +2,10 @@
 %   Detailed explanation goes hered
 kbT    = 0.026;
 a_0    = 1.42e-10; %Graphene lattice constant
-h_bar  = (6.626e-34)/(2*pi);
-q      = 1.6e-19;
+% h_bar  = (6.626e-34)/(2*pi);
+h_bar  = 6.582e-16;
+% q      = 1.6e-19;
+q      = 1;
 w      = 1e-6; % How wide is the transistor?
 Vd     = linspace(0,0.5,500);
 mu     = 0;
@@ -29,6 +31,7 @@ v = (q/h_bar).*grad;
 Ek_cut = Ek(2:length_of_Ek,:);
 x = linspace(0,1e-2,size(Ek_cut,1));
 num_of_x_indicies = length_of_Ek - 1;
+
 % TODO: Remove the hard-coded 6 in the future.
 fermi_across_y = zeros(num_of_x_indicies, 6);
 
@@ -44,15 +47,48 @@ for x_index=1:num_of_x_indicies
 end
 
 integrand = (1/(4.*pi^2)).*fermi_across_y.*v;
+integrand2 = (1/(4.*pi^2)).*fermi_across_y;
 
 % MUST USE X TO DEFINE LIMITS OF INTEGRATION
-fk_vk = trapz(x,integrand); % Integrate to infinity
-fk = trapz(x,fermi_across_y);
+fk_vk = trapz(k_x,integrand); % Integrate to infinity
+fk = trapz(k_x,integrand2);
 vth = nansum(fk_vk./fk);
 disp(vth)
 %Id=-q.*w.*fk_vk;
 
-v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
-Id=-q.*w.*v_inj;
+Vd_max = 5;
+Vd_step = 0.1;
+Id_Vd = zeros(int32(Vd_max/Vd_step), 1);
+index = 1;
+fk_vk_neg_list = zeros(int32(Vd_max/Vd_step), 1);
+for Vd = 0:Vd_step:Vd_max
+    fermi_across_y_negative = zeros(num_of_x_indicies, 6);
 
-plot(Vd,-Id);
+    for x_index = 1:num_of_x_indicies
+        Ek_y = zeros(y_resolution, 6);
+        k_y = linspace(k_y_limit(x_index), -k_y_limit(x_index), y_resolution);
+        for y_index=1:y_resolution
+            Ek_y(y_index,:) = graphene_E_k(-k_x(x_index), k_y(y_index));
+        end
+        fermi = 1./(1+exp((Ek_y-(mu - Vd))./kbT)); % What is mu?
+        fermi_across_y_negative(x_index, :) = trapz(k_y, fermi);
+    end
+
+    integrand_neg = (1/(4*pi^2)).*fermi_across_y_negative.*v;
+    integrand2_neg = (1/(4*pi^2)).*fermi_across_y_negative;
+    fk_vk_neg = trapz(k_x, integrand_neg);
+    fk_neg = trapz(k_x, integrand2_neg);  
+    Id_Vd(index) = -q*w*(sum(fk_vk - fk_vk_neg));
+    fk_vk_neg_list(index) = sum(fk_vk_neg);
+    index = index + 1;
+    
+end
+
+% % Back-scattering:
+
+
+% v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
+% Id=-q.*w.*v_inj.*sum(fk);
+
+% plot(Vd,Id);
+plot(Id_Vd);
