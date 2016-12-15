@@ -17,13 +17,13 @@ kmax_y = 2*pi/(3*b);
 kmin_y = pi / (3*b);
 Ek = graphene_bandstructure();
 length_of_Ek = size(Ek,1);
-k_x = linspace(0, pi/(3/2), length_of_Ek);
+k_x = linspace(0, kmax_x, length_of_Ek);
 k_x = k_x(3:length_of_Ek);
 k_y_limit = linspace(kmax_y, kmin_y, length_of_Ek);
 k_y_limit = k_y_limit(3:length_of_Ek);
 k_step = pi/(a_0*size(Ek,1));
 
-y_resolution = 200;
+y_resolution = 100;
 
 % Recall v=(1/h_bar)dE/dk
 % Chopping off the first element of Ek because it is 0.
@@ -46,15 +46,19 @@ for x_index=1:num_of_x_indicies
         Ek_y(y_index,:) = graphene_E_k(k_x(x_index), k_y(y_index));
     end
     fermi = 1./(1+exp((Ek_y-mu)./kbT)); % What is mu?
+    fermi_holes = 1./(1+exp((Ek_y+mu)./kbT));
     fermi_across_y(x_index, :) = trapz(k_y, fermi);
+    fermi_across_y_holes(x_index, :) = trapz(k_y, fermi_holes);
 end
 
 integrand = (1/(4.*pi^2)).*fermi_across_y.*v;
 integrand2 = (1/(4.*pi^2)).*fermi_across_y;
+integrand_holes = (1/(4.*pi^2)).*fermi_across_y_holes.*v;
 
 % MUST USE X TO DEFINE LIMITS OF INTEGRATION
 fk_vk = trapz(k_x,integrand); % Integrate to infinity
 fk = trapz(k_x,integrand2);
+fk_vk_holes = trapz(k_x, integrand_holes);
 vth = nansum(fk_vk./fk);
 disp(vth)
 %Id=-q.*w.*fk_vk;
@@ -62,11 +66,14 @@ disp(vth)
 Vd_max = 4;
 Vd_step = 0.1;
 Id_Vd = zeros(int32(Vd_max/Vd_step), 1);
+Id_Vd_holes = zeros(int32(Vd_max/Vd_step), 1);
 index = 1;
 fk_vk_neg_list = zeros(int32(Vd_max/Vd_step), 1);
+fermi_neg_list = zeros(int32(Vd_max/Vd_step), 6);
+%disp(Vd_step)
 for Vd = 0:Vd_step:Vd_max
     fermi_across_y_negative = zeros(num_of_x_indicies, 6);
-
+    %disp(num_of_x_indicies)
     for x_index = 1:num_of_x_indicies
         Ek_y = zeros(y_resolution, 6);
         k_y = linspace(k_y_limit(x_index), -k_y_limit(x_index), y_resolution);
@@ -74,14 +81,22 @@ for Vd = 0:Vd_step:Vd_max
             Ek_y(y_index,:) = graphene_E_k(-k_x(x_index), k_y(y_index));
         end
         fermi = 1./(1+exp((Ek_y-(mu - Vd))./kbT)); % What is mu?
+        fermi_neg_holes =  1./(1+exp((Ek_y+(mu - Vd))./kbT));
+        %disp(index)
+        %disp(x_index)
+        %fermi_neg_list(index, x_index)=fermi;
         fermi_across_y_negative(x_index, :) = trapz(k_y, fermi);
+        fermi_across_y_neg_holes(x_index, :) = trapz(k_y, fermi_neg_holes);
     end
 
     integrand_neg = (1/(4*pi^2)).*fermi_across_y_negative.*v;
     integrand2_neg = (1/(4*pi^2)).*fermi_across_y_negative;
+    integrand_neg_holes = (1/(4*pi^2)).*fermi_across_y_neg_holes.*v;
     fk_vk_neg = trapz(k_x, integrand_neg);
+    fk_vk_neg_holes = trapz(k_x, integrand_neg_holes);
     fk_neg = trapz(k_x, integrand2_neg);  
     Id_Vd(index) = -q*w*(sum(fk_vk - fk_vk_neg));
+    Id_Vd_holes(index) = -q*w*(sum(fk_vk_holes - fk_vk_neg_holes));
     fk_vk_neg_list(index) = sum(fk_vk_neg);
     index = index + 1;
     
