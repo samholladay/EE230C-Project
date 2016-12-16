@@ -8,7 +8,7 @@ h_bar_J = 1.055e-34; %J*s
 q      = 1.6e-19; %Coulomb
 w      = 1e-6; % 1um wide transistor
 l      = 100e-9; %100nm long transistor
-Vd     = linspace(0,1,100); %Volts
+Vd     = linspace(-0.3,0.3,100); %Volts
 mu_s     = 0; 
 
 a            = 3/2;
@@ -24,7 +24,7 @@ k_x = linspace(0, kmax_x, x_resolution);
 k_y_limit = linspace(kmax_y, kmin_y, x_resolution);
 num_bands = 6;
 % Recall v=(1/h_bar)dE/dk
-y_resolution = 50
+y_resolution = 50;
 E = zeros(x_resolution, y_resolution, num_bands);
 E1 = zeros(x_resolution, y_resolution);
 E2 = zeros(x_resolution, y_resolution);
@@ -52,7 +52,7 @@ end
 
 %Functions defining integrals for holes and electrons
 fe = @(y, eta) y./(1 + exp(y - eta)); 
-fh = @(y, eta) y.*((1./(1 + exp(y + eta))));
+fh = @(y, eta) y.*(1./(1 + exp(y + eta)));
 
 %Density of states in SI units
 D = @(E) 2*abs(E)/(pi*(h_bar_eV).^2*vf.^2); 
@@ -84,8 +84,9 @@ epsilon = 1e-5;
 
 %%
 %Id-Vd Plot
-Vg = 0.2;
+Vg = 0.0;
 damping = 0.1;
+vinj = zeros(size(Vd));
 for i = 1:length(Vd)
    %Potential created by gate bias 
    UL = -(alpha_g*Vg + alpha_d*Vd(i));
@@ -93,7 +94,7 @@ for i = 1:length(Vd)
    %Equillibrium number of electroncs
    N0_e = integral(@(y)(f(y).*D(y)), 0, Inf)*l*w; 
    %Equillibrium number of holes
-   N0_h = integral(@(y)(f(y)).*D(y), 0, Inf)*l*w; 
+   N0_h = integral(@(y)(1-f(-y)).*D(y), 0, Inf)*l*w; 
    
    N0 = N0_e - N0_h;
    
@@ -106,7 +107,8 @@ for i = 1:length(Vd)
     U_0 = -0.15;
     new_U = 1;
     ind = 0;
-    while abs(new_U - U_0) > epsilon
+ %   while abs(new_U - U_0) > epsilon
+        while 1 < 0
        ind = ind + 1;
        %Electron Concentrations
        N1_e = 0.5*integral(@(y)(f(y-(mu_s + U_0)).*D(y)), 0, Inf)*l*w; 
@@ -133,6 +135,8 @@ for i = 1:length(Vd)
    Fplus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_s), 0, Inf);
    Fminus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_d), 0, Inf);
    
+   %vinj(i) = (Fplus_e(i) + Fplus_h(i))/(integral(@(E)(f(E - eta_s)),0, Inf));
+   
    %Holes
    Fplus_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fh(y, eta_s), 0, Inf);
    Fminus_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fh(y, eta_d), 0, Inf);
@@ -140,8 +144,10 @@ for i = 1:length(Vd)
    
    Id_e(i) = 2 * q_si * w *(Fplus_e(i)- Fminus_e(i));
    Id_h(i) = 2 * q_si * w *(Fplus_h(i)- Fminus_h(i));
+   vinj(i) = (Id_e(i) + Id_h(i))./(2*q_si*w*N0);
 end
 Id = Id_e + Id_h;
+
 
 subplot(3, 1, 1)
 plot(Vd, Id);
@@ -154,8 +160,8 @@ subplot(3, 1, 3)
 plot(Vd, Id_h)
 title(['Holes'])
 xlabel(['Drain Voltage']);
-
-
+figure();
+plot(Vd, vinj);
 
 
 %%
@@ -223,8 +229,8 @@ for i = 1:length(Vg)
    Fminus_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fh(y, eta_d), 0, Inf);
    
    
-   Ig_e(i) = 2 * q_si * w *(Fgplus_e(i)- Fgminus_e(i));
-   Ig_h(i) = -2 * q_si * w *(Fplus_h(i)- Fminus_h(i));
+   Ig_e(i) = -2 * q_si * w *(Fgplus_e(i)- Fgminus_e(i));
+   Ig_h(i) = +2 * q_si * w *(Fplus_h(i)- Fminus_h(i));
 end
 Ig = Ig_e + Ig_h;
 
