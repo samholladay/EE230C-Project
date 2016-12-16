@@ -12,7 +12,7 @@ a_0          = 1.42e-10; %Graphene lattice constant
 w            = 1e-6; % How wide is the transistor?
 Vd           = linspace(0,1,40); %Volts
 vgs           = 0.3;
-y_resolution = 400;
+y_resolution = 500;
 num_bands    = 6;
 delta = 0.01;
 
@@ -185,21 +185,21 @@ for index = 1:length(Vd)
     
 end
 
-figure();
-plot(Vd, (Id_Vd_electrons+Id_Vd_holes));
-title(['Total Current']);
-xlabel(['Drain Voltage']);
-ylabel(['Drain Current (A / \mu m)']);
-figure();
-plot(Vd, Id_Vd_electrons)
-title(['Electrons']);
-xlabel(['Drain Voltage']);
-ylabel(['Drain Current (A / \mu m)']);
-figure();
-plot(Vd, Id_Vd_holes)
-title(['Holes'])
-xlabel(['Drain Voltage']);
-ylabel(['Drain Current (A / \mu m)']);
+% figure();
+% plot(Vd, (Id_Vd_electrons+Id_Vd_holes));
+% title(['Total Current']);
+% xlabel(['Drain Voltage']);
+% ylabel(['Drain Current (A / \mu m)']);
+% figure();
+% plot(Vd, Id_Vd_electrons)
+% title(['Electrons']);
+% xlabel(['Drain Voltage']);
+% ylabel(['Drain Current (A / \mu m)']);
+% figure();
+% plot(Vd, Id_Vd_holes)
+% title(['Holes'])
+% xlabel(['Drain Voltage']);
+% ylabel(['Drain Current (A / \mu m)']);
 
 % v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
 % Id=-q.*w.*v_inj.*sum(fk);
@@ -222,22 +222,22 @@ ylabel(['Drain Current (A / \mu m)']);
 
 figure();
 plot(Vd, Id_Vd_electrons+Id_Vd_holes);
-title(['Total Current']);
-xlabel(['Drain Voltage (V)']);
-ylabel(['Drain Current (\mu m / \mu m)']);
+title(['Current (without contact resistance)']);
+xlabel(['V_d (V)']);
+ylabel(['I_d (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_electrons)
 title(['Electrons']);
 xlabel(['Drain Voltage (V)']);
-ylabel(['Drain Current (\mu m / \mu m)']);
+ylabel(['Drain Current (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_holes)
 title(['Holes'])
 xlabel(['Drain Voltage (V)']);
-ylabel(['Drain Current (\mu m / \mu m)']);
+ylabel(['Id (A/ \mu m)']);
 
 figure();
 plot(Vd, vinj_Vd)
-title(['Injection Velocity'])
-xlabel(['Drain Voltage (V)']);
-ylabel(['Injection Velocity (m/s)']);
+title(['Injection Velocity (from bandstructure)'])
+xlabel(['V_d (V)']);
+ylabel(['V_{inj} (m/s)']);
