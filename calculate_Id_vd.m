@@ -12,7 +12,8 @@ a_0          = 1.42e-10; %Graphene lattice constant
 w            = 1e-6; % How wide is the transistor?
 Vd           = linspace(0,1,40); %Volts
 vgs           = 0.3;
-y_resolution = 400;
+y_resolution = 100;
+x_resolution = 100;
 num_bands    = 6;
 delta = 0.01;
 
@@ -23,7 +24,7 @@ kmax_y       = 2*pi/(3*b);
 kmin_y       = pi / (3*b);
 
 % Ek = graphene_bandstructure();
-x_resolution = 50;
+
 
 k_x = linspace(0, kmax_x, x_resolution);
 k_y_limit = linspace(kmax_y, kmin_y, x_resolution);
@@ -121,8 +122,9 @@ disp(vth);
 Id_Vd_electrons = zeros(length(Vd), 1);
 Id_Vd_holes     = zeros(length(Vd), 1);
 fk_vk_neg_list  = zeros(length(Vd), 1);
-fermi_neg_list  = zeros(length(Vd), num_bands);
+% fermi_neg_list  = zeros(length(Vd), num_bands);
 vinj_Vd         = zeros(length(Vd), 1);
+vthermal       = zeros(length(Vd), 1);
 
 for index = 1:length(Vd)
     fk_vk_across_y       = zeros(x_resolution, num_bands);
@@ -130,6 +132,7 @@ for index = 1:length(Vd)
     
     fk_vk_across_y_neg       = zeros(x_resolution, num_bands);
     fermi_neg_across_y = zeros(x_resolution, num_bands);
+    
     fermi_forward_across_y = zeros(x_resolution, num_bands);
     fk_vk_across_y_neg_holes = zeros(x_resolution, num_bands);
     guess_mu = mu;
@@ -176,32 +179,41 @@ for index = 1:length(Vd)
     
     Id_Vd_electrons(index) = -q_si*w*(sum(fk_vk - fk_vk_neg));
     Id_Vd_holes(index)     =  q_si*w*(sum(fk_vk_holes - fk_vk_neg_holes));
-    fk_vk_neg_list(index)  = sum(fk_vk_neg);
-    v_inj_fwd = nansum(fk_vk./fk_forward);
-    v_inj_back = nansum(fk_vk_neg./fk_neg);
-    vinj_Vd(index)         = v_inj_fwd - v_inj_back;
+%     fk_vk_neg_list(index)  = sum(fk_vk_neg);
+    vthermal(index)        = nansum(fk_vk./fk_forward);
+%     v_inj_back             = nansum(fk_vk_neg./fk_neg);
+    
+%     vinj_Vd(index)         = vthermal(index) - v_inj_back;
+    vinj_Vd(index)         = sum(fk_vk - fk_vk_neg - fk_vk_holes + fk_vk_neg_holes)./sum(fk_forward+fk_neg);
     
 %     fk_vk_neg_new(index,:) = trapz(k_x, trapz(1/1+exp((E-(mu + Vd(index)))/kbT)));
     
 end
 
 figure();
-plot(Vd, (Id_Vd_electrons+Id_Vd_holes));
-title(['Total Current']);
-xlabel(['Drain Voltage']);
+plot(Vd, Id_Vd_electrons+Id_Vd_holes);
+title(['Current']);
+xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_electrons)
 title(['Electrons']);
-xlabel(['Drain Voltage']);
+xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_holes)
 title(['Holes'])
-xlabel(['Drain Voltage']);
+xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (A / \mu m)']);
 
-% v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
+figure();
+% hold on;
+% plot(Vd, vthermal)
+plot(Vd, vinj_Vd/vth);
+% plot(Vd, vthermal);
+title(['Injection Velocity As a Ratio of Thermal Velocity'])
+xlabel(['Drain Voltage (V)']);
+ylabel(['Injection Velocity (m/s)']);% v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
 % Id=-q.*w.*v_inj.*sum(fk);
 %%
 % subplot(3, 1, 1)
@@ -222,22 +234,25 @@ ylabel(['Drain Current (A / \mu m)']);
 
 figure();
 plot(Vd, Id_Vd_electrons+Id_Vd_holes);
-title(['Total Current']);
+title(['Current']);
 xlabel(['Drain Voltage (V)']);
-ylabel(['Drain Current (\mu m / \mu m)']);
+ylabel(['Drain Current (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_electrons)
 title(['Electrons']);
 xlabel(['Drain Voltage (V)']);
-ylabel(['Drain Current (\mu m / \mu m)']);
+ylabel(['Drain Current (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_holes)
 title(['Holes'])
 xlabel(['Drain Voltage (V)']);
-ylabel(['Drain Current (\mu m / \mu m)']);
+ylabel(['Drain Current (A / \mu m)']);
 
 figure();
-plot(Vd, vinj_Vd)
-title(['Injection Velocity'])
+% hold on;
+% plot(Vd, vthermal)
+plot(Vd, vinj_Vd/vth);
+% plot(Vd, vthermal);
+title(['Injection Velocity As a Ratio of Thermal Velocity'])
 xlabel(['Drain Voltage (V)']);
-ylabel(['Injection Velocity (m/s)']);
+ylabel(['Injection Velocity/Thermal Velocity']);
