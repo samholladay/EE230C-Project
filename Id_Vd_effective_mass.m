@@ -42,7 +42,7 @@ for i = 1:length(Vd)
        ind = ind + 1;
        %Electron Concentrations
        N1_e = 0.5*integral(@(y)(f(y+mu_s + Uscf).*D(y)), 0, Inf)*l*w; 
-       N2_e = 0.5*integral(@(y)(f(y+mu_s + Uscf + Vd2).*D(y)), 0, Inf)*l*w;
+       N2_e = 0.5*integral(@(y)(f(y+mu_s + Uscf + Vd(i)).*D(y)), 0, Inf)*l*w;
        
        %Hole Concentrations
        N1_h = 0.5*integral(@(y)((1-f(-y+mu_s + Uscf)).*D(y)), 0, Inf)*l*w; 
@@ -60,10 +60,8 @@ for i = 1:length(Vd)
        disp(num2str(Ulast - Uscf));
    end
     
-    
-    
    eta_s = (mu_s + UL)/ kbT_eV;
-   eta_d = (mu_s-Vd(i) + UL) / kbT_eV; %pretty sure this is the correct conversion?
+   eta_d = (mu_s + Vd(i) + UL) / kbT_eV; %pretty sure this is the correct conversion?
    %Electrons
    Fplus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_s), 0, Inf);
    Fminus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_d), 0, Inf);
@@ -124,12 +122,12 @@ for i = 1:length(Vg)
    while Ulast-Uscf > epsilon
        ind = ind + 1;
        %Electron Concentrations
-       N1_e = 0.5*integral(@(y)(f(y+mu_s + Uscf).*D(y)), 0, Inf)*l*w; 
-       N2_e = 0.5*integral(@(y)(f(y+mu_s + Uscf + Vd2).*D(y)), 0, Inf)*l*w;
+       N1_e = 0.5*integral(@(y)(f(y-(mu_s + Uscf)).*D(y)), 0, Inf)*l*w; 
+       N2_e = 0.5*integral(@(y)(f(y-(mu_s + Uscf + Vd2)).*D(y)), 0, Inf)*l*w;
        
        %Hole Concentrations
-       N1_h = 0.5*integral(@(y)((1-f(-y+mu_s + Uscf)).*D(y)), 0, Inf)*l*w; 
-       N2_h = 0.5*integral(@(y)((1-f(-y+mu_s + Uscf + Vd2)).*D(y)), 0, Inf)*l*w;
+       N1_h = 0.5*integral(@(y)((1-f(-y-(mu_s + Uscf))).*D(y)), 0, Inf)*l*w; 
+       N2_h = 0.5*integral(@(y)((1-f(-y-(mu_s + Uscf + Vd2))).*D(y)), 0, Inf)*l*w;
        
        N1 = N1_e - N1_h;
        N2 = N2_e - N2_h;
@@ -145,7 +143,7 @@ for i = 1:length(Vg)
    U = [U Uscf];
    
    eta_s = (mu_s + Uscf) / kbT_eV;
-   eta_d = (mu_s + Uscf - Vd2) / kbT_eV; %pretty sure this is the correct conversion?
+   eta_d = (mu_s + Uscf + Vd2) / kbT_eV; %pretty sure this is the correct conversion?
    %Electrons
    Fgplus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_s), 0, Inf);
    Fgminus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_d), 0, Inf);
