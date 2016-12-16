@@ -99,7 +99,7 @@ for Nk = 1:Nt
     H = H_onsite + p1 + p2 + p3 + p4;
     [V,eigst] = eig(H, 'vector');
     E(index + (Nt - Nk) + 1,:) = eigst;
-    Emk(index + Nk + 1, :) = eigst;
+    Emk(index + Nk, :) = eigst;
 end
 
 index = Nt;
@@ -128,6 +128,6 @@ for Nk = 1:Nt
     E(index + (Nt - Nk) + 1,:) = eigst;
 end
 
-h = plot(E,'b');
+% h = plot(E,'b');
 % axis([0.5 2 -3 6])
 end
