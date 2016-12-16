@@ -10,9 +10,9 @@ kbT          = 0.026; %eV
 a_0          = 1.42e-10; %Graphene lattice constant
 
 w            = 1e-6; % How wide is the transistor?
-Vd           = linspace(0,1,20); %Volts
+Vd           = linspace(0,1,40); %Volts
 vgs           = 0.3;
-y_resolution = 50;
+y_resolution = 400;
 num_bands    = 6;
 delta = 0.01;
 
@@ -122,12 +122,15 @@ Id_Vd_electrons = zeros(length(Vd), 1);
 Id_Vd_holes     = zeros(length(Vd), 1);
 fk_vk_neg_list  = zeros(length(Vd), 1);
 fermi_neg_list  = zeros(length(Vd), num_bands);
+vinj_Vd         = zeros(length(Vd), 1);
 
 for index = 1:length(Vd)
     fk_vk_across_y       = zeros(x_resolution, num_bands);
     fk_vk_across_y_holes = zeros(x_resolution, num_bands);
     
     fk_vk_across_y_neg       = zeros(x_resolution, num_bands);
+    fermi_neg_across_y = zeros(x_resolution, num_bands);
+    fermi_forward_across_y = zeros(x_resolution, num_bands);
     fk_vk_across_y_neg_holes = zeros(x_resolution, num_bands);
     guess_mu = mu;
     for x_index = 1:x_resolution
@@ -141,6 +144,7 @@ for index = 1:length(Vd)
         fermi_holes = 1./(1+exp((Ek_y+mu)./kbT));
     %     fermi_holes = 1 - fermi_holes;
         fk_vk_across_y(x_index, :)       = trapz(k_y/a_0, fermi_pos.*V_x);
+        fermi_forward_across_y(x_index,:)= trapz(k_y/a_0, fermi_pos);
         fk_vk_across_y_holes(x_index, :) = trapz(k_y/a_0, fermi_holes.*V_x);
         
         fermi_neg       = 1./(1+exp((Ek_y-(mu - Vd(index)))./kbT)); % What is mu?
@@ -149,25 +153,33 @@ for index = 1:length(Vd)
         %fermi_neg_list(index, x_index)=fermi;
         
         fk_vk_across_y_neg(x_index, :)  = trapz(k_y/a_0, fermi_neg.*V_x);
+        fermi_neg_across_y(x_index, :)       = trapz(k_y/a_0, fermi_neg);
         fk_vk_across_y_neg_holes(x_index, :) = trapz(k_y/a_0, fermi_neg_holes.*V_x);
     end
     
     integrand  = (1/(4.*pi^2)).*fk_vk_across_y;
     integrand_holes = (1/(4.*pi^2)).*fk_vk_across_y_holes;
+    integrand_fermi_forward = (1/(4.*pi^2)).*fermi_forward_across_y;
 
     % MUST USE X TO DEFINE LIMITS OF INTEGRATION
     fk_vk = trapz(k_x/a_0,integrand); % Integrate to infinity
+    fk_forward = trapz(k_x/a_0,integrand_fermi_forward);
     fk_vk_holes = trapz(k_x/a_0, integrand_holes);
 
     integrand_neg       = (1/(4*pi^2)).*fk_vk_across_y_neg;
+    integrand_fermi_neg = (1/(4.*pi^2)).*fermi_neg_across_y;
     integrand_neg_holes = (1/(4*pi^2)).*fk_vk_across_y_neg_holes;
     
     fk_vk_neg       = trapz(k_x/a_0, integrand_neg);
+    fk_neg          = trapz(k_x/a_0, integrand_fermi_neg);
     fk_vk_neg_holes = trapz(k_x/a_0, integrand_neg_holes);
     
     Id_Vd_electrons(index) = -q_si*w*(sum(fk_vk - fk_vk_neg));
     Id_Vd_holes(index)     =  q_si*w*(sum(fk_vk_holes - fk_vk_neg_holes));
     fk_vk_neg_list(index)  = sum(fk_vk_neg);
+    v_inj_fwd = nansum(fk_vk./fk_forward);
+    v_inj_back = nansum(fk_vk_neg./fk_neg);
+    vinj_Vd(index)         = v_inj_fwd - v_inj_back;
     
 %     fk_vk_neg_new(index,:) = trapz(k_x, trapz(1/1+exp((E-(mu + Vd(index)))/kbT)));
     
@@ -211,15 +223,21 @@ ylabel(['Drain Current (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_electrons+Id_Vd_holes);
 title(['Total Current']);
-xlabel(['Drain Voltage']);
+xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (\mu m / \mu m)']);
 figure();
 plot(Vd, Id_Vd_electrons)
 title(['Electrons']);
-xlabel(['Drain Voltage']);
+xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (\mu m / \mu m)']);
 figure();
 plot(Vd, Id_Vd_holes)
 title(['Holes'])
-xlabel(['Drain Voltage']);
+xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (\mu m / \mu m)']);
+
+figure();
+plot(Vd, vinj_Vd)
+title(['Injection Velocity'])
+xlabel(['Drain Voltage (V)']);
+ylabel(['Injection Velocity (m/s)']);
