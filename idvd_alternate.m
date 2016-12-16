@@ -9,7 +9,6 @@ a_0          = 1.42e-10; %Graphene lattice constant
 w            = 1e-6; % How wide is the transistor?
 Vd           = linspace(0,1.5,20); %Volts
 mu           = 0.0;
-y_resolution = 100;
 num_bands    = 6;
 
 a            = 3/2;
@@ -17,30 +16,23 @@ b            = sqrt(3)/2;
 kmax_x       = pi/(a); 
 kmax_y       = 2*pi/(3*b);
 kmin_y       = pi / (3*b);
+num_of_x_indicies = 300;
+y_resolution = 300;
+k_y_limit = linspace(kmax_y, kmin_y, num_of_x_indicies);
+k_x = linspace(0, kmax_x, length_of_Ek);
+
 
 %Ek = graphene_bandstructure(); CHANGE THIS
 Ek = zeros(num_of_x_indicies, y_resolution, num_bands);
-E1 = zeros(num_of_x_indicies, y_resolution);
-E2 = zeros(num_of_x_indicies, y_resolution);
-E3 = zeros(num_of_x_indicies, y_resolution);
-E4 = zeros(num_of_x_indicies, y_resolution);
-E5 = zeros(num_of_x_indicies, y_resolution);
-E6 = zeros(num_of_x_indicies, y_resolution);
 for x_index = 1:num_of_x_indicies
     Ek_y = zeros(y_resolution, num_bands);
     k_y = linspace(k_y_limit(x_index), -k_y_limit(x_index), y_resolution);
     for y_index=1:y_resolution
-        temp_E = graphene_E_k(-k_x(x_index), k_y(y_index));
+        temp_E = graphene_E_k(k_x(x_index), k_y(y_index));
         Ek(x_index, y_index, :) = temp_E;
-        E1(x_index, y_index) = temp_E(1);
-        E2(x_index, y_index) = temp_E(2);
-        E3(x_index, y_index) = temp_E(3);
-        E4(x_index, y_index) = temp_E(4);
-        E5(x_index, y_index) = temp_E(5);
-        E6(x_index, y_index) = temp_E(6);
     end
 end
-
+disp(Ek);
 length_of_Ek = size(Ek,1);
 
 k_x = linspace(0, kmax_x, length_of_Ek);
