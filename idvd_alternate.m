@@ -36,6 +36,9 @@ v = (1/h_bar).*(grad_x+grad_y);
 
 Ek_cut = Ek(2:length_of_Ek-1,2:length_of_Ek-1,:);
 num_of_x_indicies = size(Ek_cut,1);
+total_fk_vk_elec_forward = zeros(num_of_x_indicies,6);
+total_fk_vk_holes_forward = zeros(num_of_x_indicies,6);
+total_vth = zeros(num_of_x_indicies,6);
 for band=1:num_bands
     fermi = 1./(1+exp((Ek(:,:,band)-mu)./kbT)); % What is mu?
     fermi_holes = 1./(1+exp((Ek(:,:,band)+mu)./kbT));
@@ -48,9 +51,19 @@ for band=1:num_bands
     fk_elec = kx_step.*ky_step.*trapz(kx,trapz(ky, integrand_fk_elec, 2));
     fk_holes = kx_step.*ky_step.*trapz(kx,trapz(ky, integrand_fk_holes, 2));
     vth = (fk_vk_elec./fk_elec) + (fk_vk_holes./fk_holes);
+    total_fk_vk_elec_forward(:,band)=fk_vk_elec;
+    total_fk_vk_holes_forward(:,band)=fk_vk_holes;
+    total_vth(:,band)=vth;
 end
+elec_forward_current = sum(total_fk_vk_elec_forward,2);
+hole_forward_current = sum(total_fk_vk_holes_forward,2);
+vth = sum(total_vth,2);
 
+Id_Vd_electrons_back = zeros(Vd_max/Vd_step,1);
+Id_Vd_holes_back= zeros(Vd_max/Vd_step,1);
 for Vd=0:Vd_step:Vd_max
+    total_fk_vk_elec_back = zeros(num_of_x_indicies,6);
+    total_fk_vk_holes_back = zeros(num_of_x_indicies,6);
     for band2=1:num_bands
         fermi_back = 1./(1+exp((Ek(:,:,band2)-(mu-Vd))./kbT)); % What is mu?
         fermi_holes_back = 1./(1+exp((Ek(:,:,band2)+(mu-Vd))./kbT));
@@ -58,8 +71,16 @@ for Vd=0:Vd_step:Vd_max
         integrand_holes = (1/(4.*pi^2)).*fermi_holes.*v;
         fk_vk_elec = kx_step.*ky_step.*trapz(kx,trapz(ky, integrand_elec, 2));
         fk_vk_holes = kx_step.*ky_step.*trapz(kx,trapz(ky, integrand_holes, 2));
+        total_fk_vk_elec_back(:,band)=fk_vk_elec;
+        total_fk_vk_holes_back(:,band)=fk_vk_holes;
     end
+    elec_back_current = sum(total_fk_vk_elec_back,2);
+    hole_back_current = sum(total_fk_vk_holes_back,2);
+    Id_Vd_electrons_back(Vd)=elec_back_current;
+    Id_Vd_holes_back(Vd)=hole_back_current;
 end
+Id_Vd_electrons = -q.*w.*(Id_Vd_electrons_back+elec_forward_current);
+Id_Vd_holes = -q.*w.*(Id_Vd_holes_back+holes_forward_current);
 
 figure();
 plot(Vd, Id_Vd_electrons+Id_Vd_holes);
