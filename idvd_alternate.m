@@ -19,6 +19,28 @@ kmax_y       = 2*pi/(3*b);
 kmin_y       = pi / (3*b);
 
 %Ek = graphene_bandstructure(); CHANGE THIS
+Ek = zeros(num_of_x_indicies, y_resolution, num_bands);
+E1 = zeros(num_of_x_indicies, y_resolution);
+E2 = zeros(num_of_x_indicies, y_resolution);
+E3 = zeros(num_of_x_indicies, y_resolution);
+E4 = zeros(num_of_x_indicies, y_resolution);
+E5 = zeros(num_of_x_indicies, y_resolution);
+E6 = zeros(num_of_x_indicies, y_resolution);
+for x_index = 1:num_of_x_indicies
+    Ek_y = zeros(y_resolution, num_bands);
+    k_y = linspace(k_y_limit(x_index), -k_y_limit(x_index), y_resolution);
+    for y_index=1:y_resolution
+        temp_E = graphene_E_k(-k_x(x_index), k_y(y_index));
+        Ek(x_index, y_index, :) = temp_E;
+        E1(x_index, y_index) = temp_E(1);
+        E2(x_index, y_index) = temp_E(2);
+        E3(x_index, y_index) = temp_E(3);
+        E4(x_index, y_index) = temp_E(4);
+        E5(x_index, y_index) = temp_E(5);
+        E6(x_index, y_index) = temp_E(6);
+    end
+end
+
 length_of_Ek = size(Ek,1);
 
 k_x = linspace(0, kmax_x, length_of_Ek);
@@ -29,7 +51,7 @@ k_y_limit = k_y_limit(3:length_of_Ek);
 k_step = pi/(a_0*size(Ek,1));
 % Recall v=(1/h_bar)dE/dk
 % Chopping off the first element of Ek because it is 0.
-Ek = Ek(2:length_of_Ek, 2:length_of_Ek, :); CHANGE THIS LINE BECAUSE Ek HAS DIMENSION 3
+Ek = Ek(2:length_of_Ek, 2:length_of_Ek, :); % CHANGE THIS LINE BECAUSE Ek HAS DIMENSION 3
 grad_x = diff(Ek,kx_step,1);
 grad_y = diff(Ek, ky_step,2);
 v = (1/h_bar).*(grad_x+grad_y);
