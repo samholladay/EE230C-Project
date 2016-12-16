@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1481892528 "main.tex" "main.pdf" "main" 1481892529
+["pdflatex"] 1481903809 "main.tex" "main.pdf" "main" 1481903810
   "/etc/texmf/web2c/texmf.cnf" 1481022205 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1272929888 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
@@ -114,14 +114,17 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1471618383 31348 3c11c993a1d7e4662292855f9f7c8e1b ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1481023139 1990140 71eaa04d24f8b80682faf3fa01517bc9 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1481022503 3868685 7b531e37cd7e587993bd59c8a6e99b5c ""
-  "main.aux" 1481892529 1238 9511f7c4d311b583eb738c5835a7e912 ""
-  "main.tex" 1481886147 7926 dd18875acba992731fde844758b10c0d ""
+  "Bandstructure-eps-converted-to.pdf" 1481903511 19555 ec4ae289d2bddfe87911bc8fb481a2d8 ""
+  "Bandstructure.eps" 1481903425 53404 78de99b0cda593258f5262731018dec0 ""
+  "graphene_unit_cell.png" 1481901224 39711 20701d028617e64e43dba7badd674888 ""
+  "main.aux" 1481903809 1747 a6cf6da798a587ccc4b527e03e268111 ""
+  "main.tex" 1481903679 11987 0bfabe1c302082fb2e0d6f2f6d7e4116 ""
   "paper1_contactres.png" 1481872027 14466 f5d75a2aad9bbc41868a438290c7b3cf ""
   "paper1_fet.png" 1481872027 34264 6cb1d17888635d83954cfd984f5f4b0c ""
   "paper1_idvd3.png" 1481872027 17587 b3d6f67be6c17a0663a82b78ddc42b3f ""
   "paper1_idvg3.png" 1481872027 17364 ea5785f784587ef7db5a2951b10338bc ""
   "paper1_mobilitydata.png" 1481872027 14870 eea88c02437e6a76834402be99d50277 ""
   (generated)
-  "main.aux"
   "main.pdf"
   "main.log"
+  "main.aux"
