@@ -14,7 +14,7 @@ function[mu_s] = channel_sc_potential(E, x_resolution, y_resolution, vgs, vds, g
 w      = 1e-6; % 1um wide transistor
 l      = 100e-9; %100nm long transistor
 
-damping = 0.2;
+damping = 0.1;
 
 %Idealized MOSFET capacitances to begin with, full gate control
 Cg = 0.022*l*w; % Farads Hafnia gate, 10nm (thick), 25 dielectric
@@ -43,7 +43,7 @@ while new_U - U_0 > epsilon
     delta_N = (h + h2 - e - e2)*l*w;
 
     new_U = -q*alpha_g*vgs - q*alpha_d*vds + q*q_si*delta_N/Cg;
-    disp(new_U - U_0)
+%     disp(new_U - U_0)
     U_0 = U_0 + damping * (new_U - U_0);
 end
 mu_s = U_0;

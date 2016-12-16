@@ -10,9 +10,9 @@ kbT          = 0.026; %eV
 a_0          = 1.42e-10; %Graphene lattice constant
 
 w            = 1e-6; % How wide is the transistor?
-Vd           = linspace(0,0.5,50); %Volts
+Vd           = linspace(0,1,20); %Volts
 vgs           = 0.3;
-y_resolution = 100;
+y_resolution = 50;
 num_bands    = 6;
 delta = 0.01;
 
@@ -23,7 +23,7 @@ kmax_y       = 2*pi/(3*b);
 kmin_y       = pi / (3*b);
 
 % Ek = graphene_bandstructure();
-x_resolution = 100;
+x_resolution = 50;
 
 k_x = linspace(0, kmax_x, x_resolution);
 k_y_limit = linspace(kmax_y, kmin_y, x_resolution);
@@ -85,6 +85,8 @@ fk_vk_across_y       = zeros(x_resolution, num_bands);
 fk_vk_across_y_holes = zeros(x_resolution, num_bands);
 fermi_across_y       = zeros(x_resolution, num_bands);
 
+mu = channel_sc_potential(E, x_resolution, y_resolution, vgs, 0, -0.5*vgs);
+
 for x_index=1:x_resolution
 % for x_index=1:2
     Ek_y = [E1(x_index,:)' E2(x_index,:)' E3(x_index,:)' E4(x_index,:)' E5(x_index,:)' E6(x_index,:)'];
@@ -122,20 +124,42 @@ fk_vk_neg_list  = zeros(length(Vd), 1);
 fermi_neg_list  = zeros(length(Vd), num_bands);
 
 for index = 1:length(Vd)
+    fk_vk_across_y       = zeros(x_resolution, num_bands);
+    fk_vk_across_y_holes = zeros(x_resolution, num_bands);
+    
     fk_vk_across_y_neg       = zeros(x_resolution, num_bands);
     fk_vk_across_y_neg_holes = zeros(x_resolution, num_bands);
+    guess_mu = mu;
     for x_index = 1:x_resolution
+        mu = channel_sc_potential(E, x_resolution, y_resolution, vgs, Vd(index), guess_mu);
+        guess_mu = mu;
         k_y = linspace(-k_y_limit(x_index), k_y_limit(x_index), y_resolution);
         Ek_y = [E1(x_index,:)' E2(x_index,:)' E3(x_index,:)' E4(x_index,:)' E5(x_index,:)' E6(x_index,:)'];
-        fermi           = 1./(1+exp((Ek_y-(mu - Vd(index)))./kbT)); % What is mu?
+        V_x = [Vx1(x_index,:)' Vx2(x_index,:)' Vx3(x_index,:)' Vx4(x_index,:)' Vx5(x_index,:)' Vx6(x_index,:)'];
+        
+        fermi_pos   = 1./(1+exp((Ek_y-mu)./kbT)); % What is mu?
+        fermi_holes = 1./(1+exp((Ek_y+mu)./kbT));
+    %     fermi_holes = 1 - fermi_holes;
+        fermi_across_y(x_index, :)       = trapz(k_y/a_0, fermi_pos);
+        fk_vk_across_y(x_index, :)       = trapz(k_y/a_0, fermi_pos.*V_x);
+        fk_vk_across_y_holes(x_index, :) = trapz(k_y/a_0, fermi_holes.*V_x);
+        
+        fermi_neg       = 1./(1+exp((Ek_y-(mu - Vd(index)))./kbT)); % What is mu?
         fermi_neg_holes = 1./(1+exp((Ek_y+(mu - Vd(index)))./kbT));
 %         fermi_neg_holes = 1 - fermi_neg_holes;
         %fermi_neg_list(index, x_index)=fermi;
-        V_x = [Vx1(x_index,:)' Vx2(x_index,:)' Vx3(x_index,:)' Vx4(x_index,:)' Vx5(x_index,:)' Vx6(x_index,:)'];
         
-        fk_vk_across_y_neg(x_index, :)  = trapz(k_y/a_0, fermi.*V_x);
+        fk_vk_across_y_neg(x_index, :)  = trapz(k_y/a_0, fermi_neg.*V_x);
         fk_vk_across_y_neg_holes(x_index, :) = trapz(k_y/a_0, fermi_neg_holes.*V_x);
     end
+    
+    integrand  = (1/(4.*pi^2)).*fk_vk_across_y;
+    integrand2 = (1/(4.*pi^2)).*fermi_across_y;
+    integrand_holes = (1/(4.*pi^2)).*fk_vk_across_y_holes;
+
+    % MUST USE X TO DEFINE LIMITS OF INTEGRATION
+    fk_vk = trapz(k_x/a_0,integrand); % Integrate to infinity
+    fk_vk_holes = trapz(k_x/a_0, integrand_holes);
 
     integrand_neg       = (1/(4*pi^2)).*fk_vk_across_y_neg;
     integrand_neg_holes = (1/(4*pi^2)).*fk_vk_across_y_neg_holes;
