@@ -12,8 +12,10 @@ a_0          = 1.42e-10; %Graphene lattice constant
 w            = 1e-6; % How wide is the transistor?
 Vd           = linspace(0,1,40); %Volts
 vgs           = 0.3;
+
 y_resolution = 100;
 x_resolution = 100;
+
 num_bands    = 6;
 delta = 0.01;
 
@@ -234,9 +236,9 @@ ylabel(['Injection Velocity (m/s)']);% v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-V
 
 figure();
 plot(Vd, Id_Vd_electrons+Id_Vd_holes);
-title(['Current']);
-xlabel(['Drain Voltage (V)']);
-ylabel(['Drain Current (A / \mu m)']);
+title(['Current (without contact resistance)']);
+xlabel(['V_d (V)']);
+ylabel(['I_d (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_electrons)
 title(['Electrons']);
@@ -254,5 +256,6 @@ figure();
 plot(Vd, vinj_Vd/vth);
 % plot(Vd, vthermal);
 title(['Injection Velocity As a Ratio of Thermal Velocity'])
-xlabel(['Drain Voltage (V)']);
-ylabel(['Injection Velocity/Thermal Velocity']);
+xlabel(['V_d (V)']);
+ylabel(['V_{inj} (m/s)']);
+
