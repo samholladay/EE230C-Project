@@ -9,9 +9,9 @@ kbT          = 0.026; %eV
 a_0          = 1.42e-10; %Graphene lattice constant
 
 w            = 1e-6; % How wide is the transistor?
-Vd           = linspace(0,1.5,20); %Volts
+Vd           = linspace(0,5.5,50); %Volts
 mu           = 0.3;
-y_resolution = 48;
+y_resolution = 100;
 num_bands    = 6;
 
 a            = 3/2;
@@ -35,30 +35,65 @@ Ek = Ek(2:length_of_Ek,:);
 grad = diff(Ek)/k_step;
 v = (q/h_bar).*grad;
 
-
 Ek_cut = Ek(2:length_of_Ek-1,:);
 num_of_x_indicies = size(Ek_cut,1);
 
-fermi_across_y       = zeros(num_of_x_indicies, num_bands);
-fermi_across_y_holes = zeros(num_of_x_indicies, num_bands);
-
-for x_index=1:num_of_x_indicies
+E = zeros(num_of_x_indicies, y_resolution, num_bands);
+E1 = zeros(num_of_x_indicies, y_resolution);
+E2 = zeros(num_of_x_indicies, y_resolution);
+E3 = zeros(num_of_x_indicies, y_resolution);
+E4 = zeros(num_of_x_indicies, y_resolution);
+E5 = zeros(num_of_x_indicies, y_resolution);
+E6 = zeros(num_of_x_indicies, y_resolution);
+for x_index = 1:num_of_x_indicies
     Ek_y = zeros(y_resolution, num_bands);
     k_y = linspace(k_y_limit(x_index), -k_y_limit(x_index), y_resolution);
     for y_index=1:y_resolution
-        Ek_y(y_index,:) = graphene_E_k(k_x(x_index), k_y(y_index));
+        temp_E = graphene_E_k(-k_x(x_index), k_y(y_index));
+        E(x_index, y_index, :) = temp_E;
+        E1(x_index, y_index) = temp_E(1);
+        E2(x_index, y_index) = temp_E(2);
+        E3(x_index, y_index) = temp_E(3);
+        E4(x_index, y_index) = temp_E(4);
+        E5(x_index, y_index) = temp_E(5);
+        E6(x_index, y_index) = temp_E(6);
     end
-    fermi       = 1./(1+exp((Ek_y-mu)./kbT)); % What is mu?
-    fermi_holes = 1./(1+exp((Ek_y+mu)./kbT));
-%     fermi_holes = 1 - fermi_holes;
-    
-    fermi_across_y(x_index, :)       = trapz(k_y, fermi);
-    fermi_across_y_holes(x_index, :) = trapz(k_y, fermi_holes);
 end
 
-integrand  = (1/(4.*pi^2)).*fermi_across_y.*v;
+[Vx1, Vy] = gradient(E1);
+[Vx2, Vy] = gradient(E2);
+[Vx3, Vy] = gradient(E3);
+[Vx4, Vy] = gradient(E4);
+[Vx5, Vy] = gradient(E5);
+[Vx6, Vy] = gradient(E6);
+Vx1 = (q/h_bar) .* Vx1;
+Vx2 = (q/h_bar) .* Vx2;
+Vx3 = (q/h_bar) .* Vx3;
+Vx4 = (q/h_bar) .* Vx4;
+Vx5 = (q/h_bar) .* Vx5;
+Vx6 = (q/h_bar) .* Vx6;
+
+fk_vk_across_y       = zeros(num_of_x_indicies, num_bands);
+fk_vk_across_y_holes = zeros(num_of_x_indicies, num_bands);
+fermi_across_y       = zeros(num_of_x_indicies, num_bands);
+
+for x_index=1:num_of_x_indicies
+    Ek_y = E(x_index, :,:);
+    fermi       = 1./(1+exp((Ek_y-mu)./kbT)); % What is mu?
+    fermi_holes = 1./(1+exp((Ek_y+mu)./kbT));
+    V_x = [Vx1(x_index,:)'; Vx2(x_index,:)'; Vx3(x_index,:)'; Vx4(x_index,:)'; Vx5(x_index,:)'; Vx6(x_index,:)'];
+%     fermi_holes = 1 - fermi_holes;
+    fermi_across_y(x_index, :)       = trapz(k_y, fermi);
+    fk_vk_across_y(x_index, :)       = trapz(k_y, fermi.*V_x);
+    fk_vk_across_y_holes(x_index, :) = trapz(k_y, fermi_holes.*V_x);
+end
+
+% integrand  = (1/(4.*pi^2)).*fk_vk_across_y.*v;
+% integrand2 = (1/(4.*pi^2)).*fk_vk_across_y;
+% integrand_holes = (1/(4.*pi^2)).*fk_vk_across_y_holes.*v;
+integrand  = (1/(4.*pi^2)).*fk_vk_across_y;
 integrand2 = (1/(4.*pi^2)).*fermi_across_y;
-integrand_holes = (1/(4.*pi^2)).*fermi_across_y_holes.*v;
+integrand_holes = (1/(4.*pi^2)).*fk_vk_across_y_holes;
 
 % MUST USE X TO DEFINE LIMITS OF INTEGRATION
 fk_vk = trapz(k_x,integrand); % Integrate to infinity
@@ -73,20 +108,12 @@ Id_Vd_electrons = zeros(length(Vd), 1);
 Id_Vd_holes     = zeros(length(Vd), 1);
 fk_vk_neg_list  = zeros(length(Vd), 1);
 fermi_neg_list  = zeros(length(Vd), num_bands);
-fk_vk_new       = zeros(length(Vd), num_bands);
 
 for index = 1:length(Vd)
-    E = zeros(num_of_x_indicies, y_resolution, num_bands);
     fermi_across_y_negative  = zeros(num_of_x_indicies, num_bands);
     fermi_across_y_neg_holes = zeros(num_of_x_indicies, num_bands);
     for x_index = 1:num_of_x_indicies
-        Ek_y = zeros(y_resolution, num_bands);
-        k_y = linspace(k_y_limit(x_index), -k_y_limit(x_index), y_resolution);
-        for y_index=1:y_resolution
-            temp_E = graphene_E_k(-k_x(x_index), k_y(y_index));
-            E(x_index, y_index, :) = temp_E;
-            Ek_y(y_index,:) = temp_E;
-        end
+        Ek_y = E(x_index, :,:);
         fermi = 1./(1+exp((Ek_y-(mu - Vd(index)))./kbT)); % What is mu?
         fermi_neg_holes = 1./(1+exp((Ek_y+(mu - Vd(index)))./kbT));
 %         fermi_neg_holes = 1 - fermi_neg_holes;
@@ -106,7 +133,7 @@ for index = 1:length(Vd)
     Id_Vd_holes(index)     =  q_si*w*(sum(fk_vk_holes - fk_vk_neg_holes));
     fk_vk_neg_list(index)  = sum(fk_vk_neg);
     
-    fk_vk_neg_new(index,:) = trapz(k_x, trapz(1/1+exp((E-(mu + Vd(index)))/kbT)));
+%     fk_vk_neg_new(index,:) = trapz(k_x, trapz(1/1+exp((E-(mu + Vd(index)))/kbT)));
     
 end
 
