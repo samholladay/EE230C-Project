@@ -7,15 +7,14 @@ h_bar        = 6.582e-16; %eV
 q            = 1;
 q_si         = 1.6e-19; 
 kbT          = 0.026; %eV
+kbT_si       = 1.381e-23 * 300; 
 a_0          = 1.42e-10; %Graphene lattice constant
 
 w            = 1e-6; % How wide is the transistor?
-Vd           = linspace(0,1,40); %Volts
-vgs           = 0.3;
-
-y_resolution = 100;
-x_resolution = 100;
-
+Vd           = linspace(0,1,20); %Volts
+vgs          = 5;
+y_resolution = 50;
+x_resolution = 50;
 num_bands    = 6;
 delta = 0.01;
 
@@ -128,6 +127,8 @@ fk_vk_neg_list  = zeros(length(Vd), 1);
 vinj_Vd         = zeros(length(Vd), 1);
 vthermal       = zeros(length(Vd), 1);
 
+mu = channel_sc_potential(E, x_resolution, y_resolution, vgs, 0, -0.5*vgs);
+
 for index = 1:length(Vd)
     fk_vk_across_y       = zeros(x_resolution, num_bands);
     fk_vk_across_y_holes = zeros(x_resolution, num_bands);
@@ -179,8 +180,8 @@ for index = 1:length(Vd)
     fk_neg          = trapz(k_x/a_0, integrand_fermi_neg);
     fk_vk_neg_holes = trapz(k_x/a_0, integrand_neg_holes);
     
-    Id_Vd_electrons(index) = -q_si*w*(sum(fk_vk - fk_vk_neg));
-    Id_Vd_holes(index)     =  q_si*w*(sum(fk_vk_holes - fk_vk_neg_holes));
+    Id_Vd_electrons(index) = -2*q_si*w*(sum(fk_vk - fk_vk_neg));
+    Id_Vd_holes(index)     =  2*q_si*w*(sum(fk_vk_holes - fk_vk_neg_holes));
 %     fk_vk_neg_list(index)  = sum(fk_vk_neg);
     vthermal(index)        = nansum(fk_vk./fk_forward);
 %     v_inj_back             = nansum(fk_vk_neg./fk_neg);
@@ -217,6 +218,27 @@ title(['Injection Velocity As a Ratio of Thermal Velocity'])
 xlabel(['Drain Voltage (V)']);
 ylabel(['Injection Velocity (m/s)']);% v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
 % Id=-q.*w.*v_inj.*sum(fk);
+
+%% Low Field Mobility Fitting
+mu_e = 1250/(100*100);
+mu_h = 800/(100*100);
+lambda_e = abs((2*mu_e*kbT_si/q_si)/vth);
+lambda_h = abs((2*mu_h*kbT_si/q_si)/vth);
+channel_length = 70e-9;
+
+scattering_factor_e = 1/(1 + (2*channel_length/lambda_e));
+scattering_factor_h = 1/(1 + (2*channel_length/lambda_h));
+
+new_Id_Vd_electrons = Id_Vd_electrons*scattering_factor_e;
+new_Id_Vd_holes = Id_Vd_holes*scattering_factor_h;
+
+figure();
+plot(Vd, new_Id_Vd_electrons+new_Id_Vd_holes);
+title(['Current']);
+xlabel(['Drain Voltage (V)']);
+ylabel(['Drain Current (A / \mu m)']);
+
+
 %%
 % subplot(3, 1, 1)
 % plot(Vd, Id_Vd_electrons+Id_Vd_holes);
@@ -236,9 +258,9 @@ ylabel(['Injection Velocity (m/s)']);% v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-V
 
 figure();
 plot(Vd, Id_Vd_electrons+Id_Vd_holes);
-title(['Current (without contact resistance)']);
-xlabel(['V_d (V)']);
-ylabel(['I_d (A / \mu m)']);
+title(['Current']);
+xlabel(['Drain Voltage (V)']);
+ylabel(['Drain Current (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_electrons)
 title(['Electrons']);
@@ -256,6 +278,5 @@ figure();
 plot(Vd, vinj_Vd/vth);
 % plot(Vd, vthermal);
 title(['Injection Velocity As a Ratio of Thermal Velocity'])
-xlabel(['V_d (V)']);
-ylabel(['V_{inj} (m/s)']);
-
+xlabel(['Drain Voltage (V)']);
+ylabel(['Injection Velocity/Thermal Velocity']);
