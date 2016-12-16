@@ -11,7 +11,7 @@ a_0          = 1.42e-10; %Graphene lattice constant
 
 w            = 1e-6; % How wide is the transistor?
 Vd           = linspace(0,0.5,50); %Volts
-mu           = 0.3;
+vgs           = 0.3;
 y_resolution = 100;
 num_bands    = 6;
 delta = 0.01;
