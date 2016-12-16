@@ -24,7 +24,7 @@ k_x = linspace(0, kmax_x, x_resolution);
 k_y_limit = linspace(kmax_y, kmin_y, x_resolution);
 num_bands = 6;
 % Recall v=(1/h_bar)dE/dk
-y_resolution = 50
+y_resolution = 50;
 E = zeros(x_resolution, y_resolution, num_bands);
 E1 = zeros(x_resolution, y_resolution);
 E2 = zeros(x_resolution, y_resolution);
@@ -52,7 +52,7 @@ end
 
 %Functions defining integrals for holes and electrons
 fe = @(y, eta) y./(1 + exp(y - eta)); 
-fh = @(y, eta) y.*((1./(1 + exp(y + eta))));
+fh = @(y, eta) y.*(1./(1 + exp(y + eta)));
 
 %Density of states in SI units
 D = @(E) 2*abs(E)/(pi*(h_bar_eV).^2*vf.^2); 
@@ -84,19 +84,21 @@ epsilon = 1e-5;
 
 %%
 %Id-Vd Plot
-Vg = 0.2;
+Vg = 0.0;
 damping = 0.1;
+vinj = zeros(size(Vd));
+vthermal = zeros(size(Vd));
 for i = 1:length(Vd)
-   %Potential created by gate bias 
-   UL = -(alpha_g*Vg + alpha_d*Vd(i));
+    %Potential created by gate bias 
+    UL = -(alpha_g*Vg + alpha_d*Vd(i));
 
-   %Equillibrium number of electroncs
-   N0_e = integral(@(y)(f(y).*D(y)), 0, Inf)*l*w; 
-   %Equillibrium number of holes
-   N0_h = integral(@(y)(f(y)).*D(y), 0, Inf)*l*w; 
-   
-   N0 = N0_e - N0_h;
-   
+    %Equillibrium number of electroncs
+    N0_e = integral(@(y)(f(y).*D(y)), 0, Inf)*l*w; 
+    %Equillibrium number of holes
+    N0_h = integral(@(y)(1-f(-y)).*D(y), 0, Inf)*l*w; 
+
+    N0 = N0_e - N0_h;
+
     Uc = q/(Cg + Cd + Cs);
     dN = 0;
     Uscf = UL + Uc*dN; 
@@ -106,43 +108,52 @@ for i = 1:length(Vd)
     U_0 = -0.15;
     new_U = 1;
     ind = 0;
-    while abs(new_U - U_0) > epsilon
-       ind = ind + 1;
-       %Electron Concentrations
-       N1_e = 0.5*integral(@(y)(f(y-(mu_s + U_0)).*D(y)), 0, Inf)*l*w; 
-       N2_e = 0.5*integral(@(y)(f(y-(mu_s + U_0 + Vd(i))).*D(y)), 0, Inf)*l*w;
-       
-       %Hole Concentrations
-       N1_h = 0.5*integral(@(y)((f(y+mu_s + U_0))).*D(y), 0, Inf)*l*w; 
-       N2_h = 0.5*integral(@(y)(f(y+mu_s + U_0 - Vd(i)).*D(y)), 0, Inf)*l*w;
-       
-       N1 = N1_e - N1_h;
-       N2 = N2_e - N2_h;
-       delta_N = (N1_h + N2_h - N1_e - N2_e)*l*w;
+%   while abs(new_U - U_0) > epsilon
+%     while 1 < 0
+%         ind = ind + 1;
+%         %Electron Concentrations
+%         N1_e = 0.5*integral(@(y)(f(y-(mu_s + U_0)).*D(y)), 0, Inf)*l*w; 
+%         N2_e = 0.5*integral(@(y)(f(y-(mu_s + U_0 + Vd(i))).*D(y)), 0, Inf)*l*w;
+% 
+%         %Hole Concentrations
+%         N1_h = 0.5*integral(@(y)((f(y+mu_s + U_0))).*D(y), 0, Inf)*l*w; 
+%         N2_h = 0.5*integral(@(y)(f(y+mu_s + U_0 - Vd(i)).*D(y)), 0, Inf)*l*w;
+% 
+%         N1 = N1_e - N1_h;
+%         N2 = N2_e - N2_h;
+%         delta_N = (N1_h + N2_h - N1_e - N2_e)*l*w;
+% 
+%         new_U = -q*alpha_g*Vg - q*alpha_d*Vd(i) + q*q_si*delta_N/Cg;
+%         U_0 = U_0 + damping * (new_U - U_0);
+%     end
+%     disp(ind);
+    %U_0 = channel_sc_potential(E, x_resolution, y_resolution, Vg, Vd(i), 0);
+    U_L = U_0;
+%     disp(U_0);
+    eta_s = (mu_s + U_L)/ kbT_eV;
+    eta_d = (mu_s + Vd(i) + U_L) / kbT_eV; %pretty sure this is the correct conversion?
+    %Electrons
+    Fplus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_s), 0, Inf);
+    Fminus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_d), 0, Inf);
 
-       new_U = -q*alpha_g*Vg - q*alpha_d*Vd(i) + q*q_si*delta_N/Cg;
-       U_0 = U_0 + damping * (new_U - U_0);
-    end
-   disp(ind);
-   %U_0 = channel_sc_potential(E, x_resolution, y_resolution, Vg, Vd(i), 0);
-   U_L = U_0;
-   disp(U_0);
-   eta_s = (mu_s + U_L)/ kbT_eV;
-   eta_d = (mu_s + Vd(i) + U_L) / kbT_eV; %pretty sure this is the correct conversion?
-   %Electrons
-   Fplus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_s), 0, Inf);
-   Fminus_e(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fe(y, eta_d), 0, Inf);
-   
-   %Holes
-   Fplus_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fh(y, eta_s), 0, Inf);
-   Fminus_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fh(y, eta_d), 0, Inf);
-   
-   
-   Id_e(i) = 2 * q_si * w *(Fplus_e(i)- Fminus_e(i));
-   Id_h(i) = 2 * q_si * w *(Fplus_h(i)- Fminus_h(i));
+    %vinj(i) = (Fplus_e(i) + Fplus_h(i))/(integral(@(E)(f(E - eta_s)),0, Inf));
+
+    %Holes
+    Fplus_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fh(y, eta_s), 0, Inf);
+    Fminus_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fh(y, eta_d), 0, Inf);
+
+    N_temp(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf^2) * integral(@(y)fh(y, eta_s), 0, Inf);
+    N_temp_neg(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf^2) * integral(@(y)fh(y, eta_d), 0, Inf);
+    N_temp_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf^2) * integral(@(y)fh(y, eta_s), 0, Inf);
+    N_temp_neg_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf^2) * integral(@(y)fe(y, eta_d), 0, Inf);
+    Id_e(i) = -2 * q_si * w *(Fplus_e(i)- Fminus_e(i));
+    Id_h(i) = 2 * q_si * w *(Fplus_h(i)- Fminus_h(i));
+    vinj(i) = (Id_e(i) + Id_h(i))./(2*q_si*w * (N_temp(i) + N_temp_neg_h(i) + N_temp(i) + N_temp_neg_h(i)));
+%     vthermal(i) = Fplus_h(i)/N_temp(i);
 end
 Id = Id_e + Id_h;
 
+%%
 subplot(3, 1, 1)
 plot(Vd, Id);
 title(['Total Current']);
@@ -154,8 +165,11 @@ subplot(3, 1, 3)
 plot(Vd, Id_h)
 title(['Holes'])
 xlabel(['Drain Voltage']);
-
-
+figure();
+plot(Vd, vinj);
+title(['Injection Velocity'])
+ylabel(['Injection Velocity (m/s)']);
+xlabel(['Drain Voltage']);
 
 
 %%
@@ -223,8 +237,8 @@ for i = 1:length(Vg)
    Fminus_h(i) = 1 / (2*pi^2) * (kbT_eV / (h_bar_eV)).^2 * 1/(vf) * integral(@(y)fh(y, eta_d), 0, Inf);
    
    
-   Ig_e(i) = 2 * q_si * w *(Fgplus_e(i)- Fgminus_e(i));
-   Ig_h(i) = -2 * q_si * w *(Fplus_h(i)- Fminus_h(i));
+   Ig_e(i) = -2 * q_si * w *(Fgplus_e(i)- Fgminus_e(i));
+   Ig_h(i) = +2 * q_si * w *(Fplus_h(i)- Fminus_h(i));
 end
 Ig = Ig_e + Ig_h;
 
