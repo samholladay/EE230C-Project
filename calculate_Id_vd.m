@@ -22,40 +22,30 @@ kmax_x       = pi/(a);
 kmax_y       = 2*pi/(3*b);
 kmin_y       = pi / (3*b);
 
-Ek = graphene_bandstructure();
-length_of_Ek = size(Ek,1);
+% Ek = graphene_bandstructure();
+x_resolution = 100;
 
-k_x = linspace(0, kmax_x, length_of_Ek);
-k_x = k_x(3:length_of_Ek);
-k_y_limit = linspace(kmax_y, kmin_y, length_of_Ek);
-k_y_limit = k_y_limit(3:length_of_Ek);
+k_x = linspace(0, kmax_x, x_resolution);
+k_y_limit = linspace(kmax_y, kmin_y, x_resolution);
 
-k_step = pi/(a_0*size(Ek,1));
 % Recall v=(1/h_bar)dE/dk
-% Chopping off the first element of Ek because it is 0.
-Ek = Ek(2:length_of_Ek,:);
-grad = diff(Ek)/k_step;
-v = (q/h_bar).*grad;
 
-Ek_cut = Ek(2:length_of_Ek-1,:);
-num_of_x_indicies = size(Ek_cut,1);
+E = zeros(x_resolution, y_resolution, num_bands);
+E1 = zeros(x_resolution, y_resolution);
+E2 = zeros(x_resolution, y_resolution);
+E3 = zeros(x_resolution, y_resolution);
+E4 = zeros(x_resolution, y_resolution);
+E5 = zeros(x_resolution, y_resolution);
+E6 = zeros(x_resolution, y_resolution);
 
-E = zeros(num_of_x_indicies, y_resolution, num_bands);
-E1 = zeros(num_of_x_indicies, y_resolution);
-E2 = zeros(num_of_x_indicies, y_resolution);
-E3 = zeros(num_of_x_indicies, y_resolution);
-E4 = zeros(num_of_x_indicies, y_resolution);
-E5 = zeros(num_of_x_indicies, y_resolution);
-E6 = zeros(num_of_x_indicies, y_resolution);
+Vx1 = zeros(x_resolution, y_resolution);
+Vx2 = zeros(x_resolution, y_resolution);
+Vx3 = zeros(x_resolution, y_resolution);
+Vx4 = zeros(x_resolution, y_resolution);
+Vx5 = zeros(x_resolution, y_resolution);
+Vx6 = zeros(x_resolution, y_resolution);
 
-Vx1 = zeros(num_of_x_indicies, y_resolution);
-Vx2 = zeros(num_of_x_indicies, y_resolution);
-Vx3 = zeros(num_of_x_indicies, y_resolution);
-Vx4 = zeros(num_of_x_indicies, y_resolution);
-Vx5 = zeros(num_of_x_indicies, y_resolution);
-Vx6 = zeros(num_of_x_indicies, y_resolution);
-
-for x_index = 1:num_of_x_indicies
+for x_index = 1:x_resolution
     Ek_y = zeros(y_resolution, num_bands);
     k_y = linspace(-k_y_limit(x_index), k_y_limit(x_index), y_resolution);
     for y_index=1:y_resolution
@@ -91,13 +81,14 @@ end
 % Vx6 = (q/(h_bar*k_step)) .* Vx6;
 
 
-fk_vk_across_y       = zeros(num_of_x_indicies, num_bands);
-fk_vk_across_y_holes = zeros(num_of_x_indicies, num_bands);
-fermi_across_y       = zeros(num_of_x_indicies, num_bands);
+fk_vk_across_y       = zeros(x_resolution, num_bands);
+fk_vk_across_y_holes = zeros(x_resolution, num_bands);
+fermi_across_y       = zeros(x_resolution, num_bands);
 
-for x_index=1:num_of_x_indicies
+for x_index=1:x_resolution
 % for x_index=1:2
     Ek_y = [E1(x_index,:)' E2(x_index,:)' E3(x_index,:)' E4(x_index,:)' E5(x_index,:)' E6(x_index,:)'];
+    k_y = linspace(-k_y_limit(x_index), k_y_limit(x_index), y_resolution);
     
     fermi       = 1./(1+exp((Ek_y-mu)./kbT)); % What is mu?
     fermi_holes = 1./(1+exp((Ek_y+mu)./kbT));
@@ -131,9 +122,10 @@ fk_vk_neg_list  = zeros(length(Vd), 1);
 fermi_neg_list  = zeros(length(Vd), num_bands);
 
 for index = 1:length(Vd)
-    fk_vk_across_y_neg       = zeros(num_of_x_indicies, num_bands);
-    fk_vk_across_y_neg_holes = zeros(num_of_x_indicies, num_bands);
-    for x_index = 1:num_of_x_indicies
+    fk_vk_across_y_neg       = zeros(x_resolution, num_bands);
+    fk_vk_across_y_neg_holes = zeros(x_resolution, num_bands);
+    for x_index = 1:x_resolution
+        k_y = linspace(-k_y_limit(x_index), k_y_limit(x_index), y_resolution);
         Ek_y = [E1(x_index,:)' E2(x_index,:)' E3(x_index,:)' E4(x_index,:)' E5(x_index,:)' E6(x_index,:)'];
         fermi           = 1./(1+exp((Ek_y-(mu - Vd(index)))./kbT)); % What is mu?
         fermi_neg_holes = 1./(1+exp((Ek_y+(mu - Vd(index)))./kbT));
