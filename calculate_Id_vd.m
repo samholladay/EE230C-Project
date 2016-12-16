@@ -1,5 +1,6 @@
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes hered
+clear all
 % h_bar  = (6.626e-34)/(2*pi); % SI
 h_bar        = 6.582e-16; %eV
 % q            = 1.6e-19;
@@ -66,23 +67,25 @@ end
 [Vx4, Vy] = gradient(E4);
 [Vx5, Vy] = gradient(E5);
 [Vx6, Vy] = gradient(E6);
-Vx1 = (q/h_bar) .* Vx1;
-Vx2 = (q/h_bar) .* Vx2;
-Vx3 = (q/h_bar) .* Vx3;
-Vx4 = (q/h_bar) .* Vx4;
-Vx5 = (q/h_bar) .* Vx5;
-Vx6 = (q/h_bar) .* Vx6;
+Vx1 = (q/(h_bar*k_step)) .* Vx1;
+Vx2 = (q/(h_bar*k_step)) .* Vx2;
+Vx3 = (q/(h_bar*k_step)) .* Vx3;
+Vx4 = (q/(h_bar*k_step)) .* Vx4;
+Vx5 = (q/(h_bar*k_step)) .* Vx5;
+Vx6 = (q/(h_bar*k_step)) .* Vx6;
 
 fk_vk_across_y       = zeros(num_of_x_indicies, num_bands);
 fk_vk_across_y_holes = zeros(num_of_x_indicies, num_bands);
 fermi_across_y       = zeros(num_of_x_indicies, num_bands);
 
 for x_index=1:num_of_x_indicies
-    Ek_y = E(x_index, :,:);
+    Ek_y = [E1(x_index,:)' E2(x_index,:)' E3(x_index,:)' E4(x_index,:)' E5(x_index,:)' E6(x_index,:)'];
+    
     fermi       = 1./(1+exp((Ek_y-mu)./kbT)); % What is mu?
     fermi_holes = 1./(1+exp((Ek_y+mu)./kbT));
-    V_x = [Vx1(x_index,:)'; Vx2(x_index,:)'; Vx3(x_index,:)'; Vx4(x_index,:)'; Vx5(x_index,:)'; Vx6(x_index,:)'];
+%     V_x = [Vx1(x_index,:)' Vx2(x_index,:)' Vx3(x_index,:)' Vx4(x_index,:)' Vx5(x_index,:)' Vx6(x_index,:)'];
 %     fermi_holes = 1 - fermi_holes;
+    V_x = repmat(v(x_index,:), y_resolution, 1);
     fermi_across_y(x_index, :)       = trapz(k_y, fermi);
     fk_vk_across_y(x_index, :)       = trapz(k_y, fermi.*V_x);
     fk_vk_across_y_holes(x_index, :) = trapz(k_y, fermi_holes.*V_x);
@@ -103,7 +106,7 @@ vth = nansum(fk_vk./fk);
 disp('Vth is: ');
 disp(vth);
 %Id=-q.*w.*fk_vk;
-
+%%
 Id_Vd_electrons = zeros(length(Vd), 1);
 Id_Vd_holes     = zeros(length(Vd), 1);
 fk_vk_neg_list  = zeros(length(Vd), 1);
