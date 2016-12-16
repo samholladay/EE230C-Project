@@ -140,7 +140,6 @@ for index = 1:length(Vd)
         fermi_pos   = 1./(1+exp((Ek_y-mu)./kbT)); % What is mu?
         fermi_holes = 1./(1+exp((Ek_y+mu)./kbT));
     %     fermi_holes = 1 - fermi_holes;
-        fermi_across_y(x_index, :)       = trapz(k_y/a_0, fermi_pos);
         fk_vk_across_y(x_index, :)       = trapz(k_y/a_0, fermi_pos.*V_x);
         fk_vk_across_y_holes(x_index, :) = trapz(k_y/a_0, fermi_holes.*V_x);
         
@@ -154,7 +153,6 @@ for index = 1:length(Vd)
     end
     
     integrand  = (1/(4.*pi^2)).*fk_vk_across_y;
-    integrand2 = (1/(4.*pi^2)).*fermi_across_y;
     integrand_holes = (1/(4.*pi^2)).*fk_vk_across_y_holes;
 
     % MUST USE X TO DEFINE LIMITS OF INTEGRATION
@@ -179,17 +177,17 @@ figure();
 plot(Vd, (Id_Vd_electrons+Id_Vd_holes));
 title(['Total Current']);
 xlabel(['Drain Voltage']);
-ylabel(['Drain Current (\mu m / \mu m)']);
+ylabel(['Drain Current (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_electrons)
 title(['Electrons']);
 xlabel(['Drain Voltage']);
-ylabel(['Drain Current (\mu m / \mu m)']);
+ylabel(['Drain Current (A / \mu m)']);
 figure();
 plot(Vd, Id_Vd_holes)
 title(['Holes'])
 xlabel(['Drain Voltage']);
-ylabel(['Drain Current (\mu m / \mu m)']);
+ylabel(['Drain Current (A / \mu m)']);
 
 % v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
 % Id=-q.*w.*v_inj.*sum(fk);
