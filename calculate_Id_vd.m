@@ -7,7 +7,7 @@ h_bar        = 6.582e-16; %eV
 q            = 1;
 q_si         = 1.6e-19; 
 kbT          = 0.026; %eV
-kbT_si       = 1.381e-23 * 300; 
+kbT_si       = 1.381e-23 * 300;
 a_0          = 1.42e-10; %Graphene lattice constant
 
 w            = 1e-6; % How wide is the transistor?
@@ -224,19 +224,25 @@ mu_e = 1250/(100*100);
 mu_h = 800/(100*100);
 lambda_e = abs((2*mu_e*kbT_si/q_si)/vth);
 lambda_h = abs((2*mu_h*kbT_si/q_si)/vth);
-channel_length = 70e-9;
-
-scattering_factor_e = 1/(1 + (2*channel_length/lambda_e));
-scattering_factor_h = 1/(1 + (2*channel_length/lambda_h));
-
-new_Id_Vd_electrons = Id_Vd_electrons*scattering_factor_e;
-new_Id_Vd_holes = Id_Vd_holes*scattering_factor_h;
+channel_length = [5e-9 30e-9 70e-9 150e-9];
 
 figure();
-plot(Vd, new_Id_Vd_electrons+new_Id_Vd_holes);
+hold on;
+for i = 1:length(channel_length)
+    scattering_factor_e = 1/(1 + (2*channel_length(i)/lambda_e));
+    scattering_factor_h = 1/(1 + (2*channel_length(i)/lambda_h));
+
+    new_Id_Vd_electrons = Id_Vd_electrons*scattering_factor_e;
+    new_Id_Vd_holes = Id_Vd_holes*scattering_factor_h;
+
+    plot(Vd, new_Id_Vd_electrons+new_Id_Vd_holes);
+end
+
+legend('5nm', '30nm', '70nm', '150nm');
 title(['Current']);
 xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (A / \mu m)']);
+
 
 
 %%

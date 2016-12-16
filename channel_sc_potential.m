@@ -14,10 +14,14 @@ function[mu_s] = channel_sc_potential(E, x_resolution, y_resolution, vgs, vds, g
 w      = 1e-6; % 1um wide transistor
 l      = 100e-9; %100nm long transistor
 
-damping = 0.05;
+damping = 0.001;
 
 %Idealized MOSFET capacitances to begin with, full gate control
-Cg = 0.022*l*w; % Farads Hafnia gate, 10nm (thick), 25 dielectric
+tox = 90e-9;
+epsilon_0 = 8.85e-12;
+epsilon_SiO2 = 3.9 * epsilon_0;
+Cg = (epsilon_SiO2/tox)*l*w; % Farads Hafnia gate, 10nm (thick), 25 dielectric
+% disp(Cg);
 Cd = 0;
 Cs = 0;
 Ct = Cg + Cd + Cs;
@@ -37,7 +41,7 @@ U_0 = guess_U_0;
 new_U = 1;
 
 
-while new_U - U_0 > epsilon
+while abs(new_U - U_0) > epsilon
     [e, h] = find_concentrations(E, x_resolution, y_resolution, U_0);
     [e2, h2] = find_concentrations(E, x_resolution, y_resolution, U_0-vds);
     delta_N = (h + h2 - e - e2)*l*w;
