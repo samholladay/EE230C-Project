@@ -1,4 +1,4 @@
-% function[mu_s] = channel_sc_potential(E, x_resolution, y_resolution, vgs, vds, guess_U_0, guess_delta_N);
+function[mu_s] = channel_sc_potential(E, x_resolution, y_resolution, vgs, vds, guess_U_0);
 %Self Consistent Model generation
 % a_0          = 1.42e-10; %Graphene lattice constant
 % a            = 3/2;
@@ -26,7 +26,7 @@ alpha_g = Cg ./ (Ct);
 alpha_d = Cd ./ (Ct);
 
 %Convergence Voltage Difference
-epsilon = 1e-3;
+epsilon = 1e-4;
 
 %Initial Guess
 %Note: Everything is in eV.
@@ -36,8 +36,8 @@ q_si = 1.6e-19;
 U_0 = guess_U_0;
 new_U = 1;
 
-%%
-% while new_U - U_0 > epsilon
+
+while new_U - U_0 > epsilon
     [e, h] = find_concentrations(E, x_resolution, y_resolution, U_0);
     [e2, h2] = find_concentrations(E, x_resolution, y_resolution, U_0-vds);
     delta_N = (h + h2 - e - e2)*l*w;
@@ -45,7 +45,7 @@ new_U = 1;
     new_U = -q*alpha_g*vgs - q*alpha_d*vds + q*q_si*delta_N/Cg;
     disp(new_U - U_0)
     U_0 = U_0 + damping * (new_U - U_0);
-% end
+end
 mu_s = U_0;
 %%
 % 
