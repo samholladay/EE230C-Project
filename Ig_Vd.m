@@ -13,8 +13,8 @@ a_0          = 1.42e-10; %Graphene lattice constant
 w            = 1e-6; % How wide is the transistor?
 % Vd           = linspace(0,2.5,15); %Volts
 vgs          = linspace(-10,10,30); %Volts
-vds          = 0.3;
-y_resolution = 50;
+vds          = 1;
+y_resolution = 100;
 num_bands    = 6;
 delta = 0.001;
 
@@ -25,7 +25,7 @@ kmax_y       = 2*pi/(3*b);
 kmin_y       = pi / (3*b);
 
 % Ek = graphene_bandstructure();
-x_resolution = 50;
+x_resolution = 100;
 
 k_x = linspace(0, kmax_x, x_resolution);
 k_y_limit = linspace(kmax_y, kmin_y, x_resolution);
@@ -163,6 +163,16 @@ ylabel(['Gate Current (A / \mu m)']);
 % v_inj = vth.*(1-exp(-Vd./kbT))./(1+exp(-Vd./kbT));
 % Id=-q.*w.*v_inj.*sum(fk);
 
+%% Gm
+Id_Vg = Id_Vg_electrons + Id_Vg_holes;
+gm = diff(Id_Vg);
+gm = gm ./ (20/30);
+plot(vgs(2:length(vgs))', gm);
+title(['Transconductance']);
+xlabel(['Gate Voltage']);
+ylabel(['Transconductance']);
+
+
 
 %% Low Field Mobility Fitting
 mu_e = 1250/(100*100);
@@ -172,7 +182,7 @@ lambda_h = abs((2*mu_h*kbT_si/q_si)/vth);
 channel_length = [5e-9 30e-9 70e-9 150e-9];
 
 figure();
-fig = semilogy(vgs, Id_Vg_electrons+Id_Vg_holes);
+% fig = semilogy(vgs, Id_Vg_electrons+Id_Vg_holes);
 hold on;
 for i = 1:length(channel_length)
     scattering_factor_e = 1/(1 + (2*channel_length(i)/lambda_e));
@@ -180,16 +190,16 @@ for i = 1:length(channel_length)
 
     new_Id_electrons = Id_Vg_electrons*scattering_factor_e;
     new_Id_holes = Id_Vg_holes*scattering_factor_h;
-
-    semilogy(vgs, new_Id_electrons+new_Id_holes);
+    plot(diff(new_Id_electrons+new_Id_holes)./(20/30));
+%     semilogy(vgs, new_Id_electrons+new_Id_holes);
 end
 
 legend('No Scattering','5nm', '30nm', '70nm', '150nm');
 title(['Current']);
 xlabel(['Gate Voltage (V)']);
 % ylabel(['Drain Current (A / \mu m)']);
-saveas(fig, 'Pictures/Ig_Vd/Channel Lengths Ig Vd.png');
-saveas(fig, 'Pictures/Ig_Vd/Channel Lengths Ig Vd', 'epsc');
+% saveas(fig, 'Pictures/Ig_Vd/Channel Lengths Ig Vd.png');
+% saveas(fig, 'Pictures/Ig_Vd/Channel Lengths Ig Vd', 'epsc');
 
 
 
