@@ -11,10 +11,10 @@ kbT_si       = 1.381e-23 * 300;
 a_0          = 1.42e-10; %Graphene lattice constant
 
 w            = 1e-6; % How wide is the transistor?
-Vd           = linspace(0,1,20); %Volts
+Vd           = linspace(0,1,40); %Volts
 vgs          = 5;
-y_resolution = 50;
-x_resolution = 50;
+y_resolution = 100;
+x_resolution = 100;
 num_bands    = 6;
 delta = 0.01;
 
@@ -228,6 +228,8 @@ channel_length = [5e-9 30e-9 70e-9 150e-9];
 
 figure();
 hold on;
+plot(Vd, Id_Vd_electrons+Id_Vd_holes);
+
 for i = 1:length(channel_length)
     scattering_factor_e = 1/(1 + (2*channel_length(i)/lambda_e));
     scattering_factor_h = 1/(1 + (2*channel_length(i)/lambda_h));
@@ -238,7 +240,7 @@ for i = 1:length(channel_length)
     plot(Vd, new_Id_Vd_electrons+new_Id_Vd_holes);
 end
 
-legend('5nm', '30nm', '70nm', '150nm');
+legend('No scattering', '5nm', '30nm', '70nm', '150nm');
 title(['Current']);
 xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (A / \mu m)']);
