@@ -172,7 +172,7 @@ lambda_h = abs((2*mu_h*kbT_si/q_si)/vth);
 channel_length = [5e-9 30e-9 70e-9 150e-9];
 
 figure();
-semilogy(vgs, Id_Vg_electrons+Id_Vg_holes);
+fig = semilogy(vgs, Id_Vg_electrons+Id_Vg_holes);
 hold on;
 for i = 1:length(channel_length)
     scattering_factor_e = 1/(1 + (2*channel_length(i)/lambda_e));
@@ -188,7 +188,8 @@ legend('No Scattering','5nm', '30nm', '70nm', '150nm');
 title(['Current']);
 xlabel(['Gate Voltage (V)']);
 % ylabel(['Drain Current (A / \mu m)']);
-
+saveas(fig, 'Pictures/Ig_Vd/Channel Lengths Ig Vd.png');
+saveas(fig, 'Pictures/Ig_Vd/Channel Lengths Ig Vd', 'epsc');
 
 
 

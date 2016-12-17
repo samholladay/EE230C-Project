@@ -228,7 +228,7 @@ channel_length = [5e-9 30e-9 70e-9 150e-9];
 
 figure();
 hold on;
-plot(Vd, Id_Vd_electrons+Id_Vd_holes);
+fig = plot(Vd, Id_Vd_electrons+Id_Vd_holes);
 
 for i = 1:length(channel_length)
     scattering_factor_e = 1/(1 + (2*channel_length(i)/lambda_e));
@@ -244,7 +244,8 @@ legend('No scattering', '5nm', '30nm', '70nm', '150nm');
 title(['Current']);
 xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (A / \mu m)']);
-
+saveas(fig, 'Pictures/Id_Vd/Channel Lengths Id Vd.png');
+saveas(fig, 'Pictures/Id_Vd/Channel Lengths Id Vd', 'epsc');
 
 
 %%
