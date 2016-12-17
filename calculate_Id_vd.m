@@ -244,8 +244,8 @@ legend('No scattering', '5nm', '30nm', '70nm', '150nm');
 title(['Current']);
 xlabel(['Drain Voltage (V)']);
 ylabel(['Drain Current (A / \mu m)']);
-saveas(fig, 'Pictures/Id_Vd/Channel Lengths Id Vd.png');
-saveas(fig, 'Pictures/Id_Vd/Channel Lengths Id Vd', 'epsc');
+saveas(fig, 'Pictures/Id_Vd/Channel Lengths Id Vd with DIBL.png');
+saveas(fig, 'Pictures/Id_Vd/Channel Lengths Id Vd with DIBL', 'epsc');
 
 
 %%

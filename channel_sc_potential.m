@@ -22,7 +22,7 @@ epsilon_0 = 8.85e-12;
 epsilon_SiO2 = 3.9 * epsilon_0;
 Cg = (epsilon_SiO2/tox)*l*w; % Farads Hafnia gate, 10nm (thick), 25 dielectric
 % disp(Cg);
-Cd = 0;
+Cd = Cg/20;
 Cs = 0;
 Ct = Cg + Cd + Cs;
 alpha_s = Cs ./ (Ct);
